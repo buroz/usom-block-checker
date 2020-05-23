@@ -1,33 +1,49 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"sort"
 )
 
 var list []string
 
 func main() {
+	fileUrl := "https://www.usom.gov.tr/url-list.txt"
 
-	/*
-		fileUrl := "https://www.usom.gov.tr/url-list.txt"
+	if err := DownloadFile("list.txt", fileUrl); err != nil {
+		panic(err)
+	}
 
-		if err := DownloadFile("list.txt", fileUrl); err != nil {
-			panic(err)
-		}
-	*/
-
-	data, err := ioutil.ReadFile("url-list.txt")
+	_, err := ioutil.ReadFile("list.txt")
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return
 	}
 
-	list = append(list, string(data))
+	file, err := os.Open("list.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
 
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fmt.Println()
+		list = append(list, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	sort.Strings(list)
+
+	fmt.Println(sort.SearchStrings(list, "abc-kemeja.fr"))
 }
 
 func DownloadFile(filepath string, url string) error {
